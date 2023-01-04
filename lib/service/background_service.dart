@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+import 'package:flutter_background_service_ios/flutter_background_service_ios.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'notification_service.dart';
 
@@ -67,10 +68,10 @@ class BackgroundService{
     Timer.periodic(const Duration(seconds: 5), (timer) async {
       if (service is AndroidServiceInstance) {
         if (await service.isForegroundService()) {
-          NotificationService.showNotification(flutterLocalNotificationsPlugin, 1, 'title', 'body', 'payload');
+        //  NotificationService.showNotification(flutterLocalNotificationsPlugin, 1, 'title', 'body', 'payload');
         }
-      }else{
-        NotificationService.showNotification(flutterLocalNotificationsPlugin, 1, 'title', 'body', 'payload');
+      }else if (service is IOSServiceInstance){
+      //  NotificationService.showNotification(flutterLocalNotificationsPlugin, 1, 'title', 'body', 'payload');
       }
 
       /// you can see this log in logcat

@@ -1,4 +1,6 @@
 import 'package:background_service_flutter/controllers/home_screen_controller.dart';
+import 'package:background_service_flutter/main.dart';
+import 'package:background_service_flutter/service/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
@@ -8,6 +10,13 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(onPressed: (){
+            NotificationService.showNotification(flutterLocalNotificationsPlugin, 1, 'title', 'body', 'payload');
+          }, icon: Icon(Icons.add))
+        ],
+      ),
       body: Container(
         alignment: Alignment.center,
         child: Column(
@@ -33,11 +42,16 @@ class HomeScreen extends StatelessWidget {
 
             }, child: Text('Start')),
             TextButton(onPressed: ()async{
+
+
               final service = FlutterBackgroundService();
               var isRunning = await service.isRunning();
               if (isRunning) {
                 service.invoke("stopService");
               }
+
+
+
             }, child: Text('Stop')),
             TextButton(onPressed: (){
               FlutterBackgroundService().invoke("setAsBackground");

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:background_service_flutter/main.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -13,13 +14,28 @@ class NotificationService{
   
   static Future<void> init(FlutterLocalNotificationsPlugin localNotificationsPlugin)async{
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings(
+    DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings(
       requestSoundPermission: false,
       requestBadgePermission: false,
       requestAlertPermission: false,
       onDidReceiveLocalNotification: onDidReceiveLocalNotification,
+      notificationCategories: <DarwinNotificationCategory>[
+
+        DarwinNotificationCategory(
+          'cat1',
+          actions: <DarwinNotificationAction> [
+            DarwinNotificationAction.text('id_1', 'Start', buttonTitle: 'Start'),
+            DarwinNotificationAction.text('id_2', 'Stop', buttonTitle: 'Stop'),
+            DarwinNotificationAction.text('id_3', 'Background', buttonTitle: 'Background'),
+            DarwinNotificationAction.text('id_4', 'Foreground', buttonTitle: 'Foreground'),
+          ],
+          options: <DarwinNotificationCategoryOption>{
+            DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
+          },
+        )
+      ],
     );
-    const InitializationSettings initializationSettings = InitializationSettings(
+     InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
     );
@@ -37,8 +53,33 @@ class NotificationService{
     );
   }
   static void onDidResponse(NotificationResponse details) async{
+
+
       if(details.payload != null){
-       // await navKey.currentState?.push(MaterialPageRoute(builder: (context) => SecondScreen(details.payload??'No Data')));
+       // // await navKey.currentState?.push(MaterialPageRoute(builder: (context) => SecondScreen(details.payload??'No Data')));
+        print('Clicked_button_name:-onDidResponse ${details.actionId}');
+       //
+
+        if(details.actionId=='id_1'){
+          final service = FlutterBackgroundService();
+          var isRunning = await service.isRunning();
+          if (isRunning) {
+            //service.invoke("stopService");
+          } else {
+            service.startService();
+          }
+        }else if(details.actionId=='id_2'){
+          final service = FlutterBackgroundService();
+          var isRunning = await service.isRunning();
+          if (isRunning) {
+            service.invoke("stopService");
+          }
+        }else if(details.actionId=='id_3'){
+          FlutterBackgroundService().invoke('setAsBackground');
+        }else if(details.actionId=='id_4'){
+          FlutterBackgroundService().invoke('setAsForeground');
+        }
+
       }
   }
 
@@ -77,18 +118,25 @@ class NotificationService{
       priority: Priority.high,
       importance: Importance.high,
       ticker: 'ticker',
+      actions: <AndroidNotificationAction>[
+        AndroidNotificationAction('id_1', 'Start',showsUserInterface: true),
+        AndroidNotificationAction('id_2', 'Stop',showsUserInterface: true),
+        AndroidNotificationAction('id_3', 'Background',showsUserInterface: true),
+        AndroidNotificationAction('id_4', 'Foreground',showsUserInterface: true),
+      ],
     );
-    DarwinNotificationDetails iosPlatformChannelSpecifics = const DarwinNotificationDetails(
+    DarwinNotificationDetails iosPlatformChannelSpecifics =  const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: true
+        presentSound: true,
+        categoryIdentifier: 'cat1'
     );
     NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics, iOS: iosPlatformChannelSpecifics);
     plugin.show(id, title, body, platformChannelSpecifics);
   }
 
   static void onDidReceiveLocalNotification(int id, String? title, String? body, String? payload) {
-    // print('Checker:__ ${StackTrace.current} Method Called');
+    print('Clicked_button_name: onDidReceiveLocalNotification $payload');
   }
 
   static void clearNotification(FlutterLocalNotificationsPlugin plugin)async{
